@@ -15,7 +15,7 @@ class NewScene{
         this.clock = new THREE.Clock()
         this.InitShader()
         this.InitCamera()
-        //this.InitLights()
+        this.InitLights()
         this.InitRenderer()
         this.InitControls()
         this.Update()
@@ -27,21 +27,48 @@ class NewScene{
     InitShader(){
         this.geometry = new THREE.BoxBufferGeometry(3, 3, 3, 20, 20, 20)
         this.material = new THREE.ShaderMaterial({
-            side: THREE.DoubleSide,
-            vertexShader: vertex,
-            fragmentShader: fragment,
-            uniforms: {
-                u_time: { value: 0.0},
-                u_resolution: { value: new THREE.Vector2() },
-                u_mouse: { value: new THREE.Vector2() }
-            },
-            transparent: true,
-            depthTest: false,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending
-        })
+                    side: THREE.DoubleSide,
+                    vertexShader: vertex,
+                    fragmentShader: fragment,
+                    uniforms: {
+                        u_time: { value: 0.0},
+                        u_resolution: { value: new THREE.Vector2() },
+                        u_mouse: { value: new THREE.Vector2() }
+                    },
+                    //transparent: true,
+                    depthTest: false,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending
+                })
         this.mesh = new THREE.Mesh(this.geometry, this.material)
         this.scene.add(this.mesh)
+        this.fontLoader = new THREE.FontLoader()
+        this.fontLoader.load(
+            './font.json',
+            (font) => {
+                this.textParameters = {
+                    font: font,
+                    size: 0.3,
+                    height: 0.1,
+                    curveSegments: 12,
+                    bevelEnabled: true,
+                    bevelThickness: 0.03,
+                    bevelSize: 0.02,
+                    bevelOffset: 0,
+                    bevelSegments: 5
+                }
+                this.textGeometry = new THREE.TextGeometry(
+                    'Wake up, Neo...',
+                    this.textParameters
+                )
+                
+                this.textGeometry.computeBoundingBox()
+                this.textGeometry.center()
+                this.text = new THREE.Mesh(this.textGeometry, new THREE.MeshStandardMaterial({color: 0x191919 }))
+                this.text.position.set(0, 0 , -2)
+                this.scene.add(this.text)        
+            }
+        ) 
     }
 
     InitCamera(){
@@ -53,6 +80,9 @@ class NewScene{
     InitLights(){
         this.ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
         this.scene.add(this.ambientLight)
+        this.pointLight = new THREE.PointLight(0x00ff00, 10.5)
+        this.scene.add(this.pointLight)
+        this.pointLight.position.set(0, 0, 2)
     }
 
     InitRenderer(){
@@ -71,6 +101,8 @@ class NewScene{
         this.controls = new OrbitControls(this.camera, canvas)
         this.controls.enableDamping = true
         this.controls.update()
+        this.controls.enableZoom = false
+        this.controls.enablePan = false
     }
 
     Resize(){
@@ -81,7 +113,7 @@ class NewScene{
 
     Update(){
         requestAnimationFrame(() => { 
-            console.log(this.material.uniforms.u_time.value) 
+            //console.log(this.material.uniforms.u_time.value) 
             this.material.uniforms.u_time.value = this.clock.getElapsedTime()   
             this.renderer.render(this.scene, this.camera)
             this.controls.update()
